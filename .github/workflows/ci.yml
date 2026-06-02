@@ -152,7 +152,7 @@ jobs:
           cache: maven
 
       # Cache the downloaded Chromium binary (~250 MB) to avoid re-downloading
-      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ hashFiles('**/pom.xml') }}
