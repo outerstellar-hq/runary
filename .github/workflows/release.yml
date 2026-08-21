@@ -24,7 +24,6 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: maven
 
       - name: Build fat JAR
         run: mvn package -DskipTests -Dflyway.skip=true
@@ -98,7 +97,6 @@ jobs:
           java-version: '25'
           distribution: 'graalvm-community'
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          cache: maven
 
       # Skip the maven-enforcer exact-version check — GraalVM reports a
       # slightly different java.version string than stock Temurin.
