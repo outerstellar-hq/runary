@@ -8,9 +8,7 @@ on:
         required: true
         default: 'yes'
 
-permissions:
-  contents: write
-  packages: write
+permissions: {}
 
 jobs:
   beta:
@@ -18,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     # Only run after the CI workflow succeeds (tests + quality checks)
     if: github.ref == 'refs/heads/develop'
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -28,7 +28,6 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: maven
 
       - name: Extract version from pom.xml
         id: version
@@ -50,7 +49,7 @@ jobs:
           echo "Beta tag: $TAG"
 
       - name: Build fat JAR
-        run: mvn package -DskipTests -Dflyway.skip=true -q
+        run: mvn package -DskipTests -Dflyway.skip=true -q -T 4
 
       - name: Rename fat JAR
         env:
@@ -93,6 +92,9 @@ jobs:
     name: Docker Beta Image
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop'
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
