@@ -73,7 +73,7 @@ jobs:
 
   # ── Tests: Linux first (fast, gates downstream) ──────────────────────────
   test-linux:
-    name: Tests (Linux)
+    name: Tests (ubuntu-latest)
     needs: code-quality
     runs-on: ubuntu-latest
 
