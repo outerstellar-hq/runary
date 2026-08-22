@@ -41,35 +41,39 @@ jobs:
         run: mvn spotless:apply -q
 
       - name: Run quality checks (no tests, no Sonar)
-        run: mvn verify -DskipTests -Dflyway.skip=true -Dsonar.skip=true
+        run: mvn verify -DskipTests -Dflyway.skip=true -Dsonar.skip=true -T 4
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: checkstyle-report
           path: '**/target/checkstyle-result.xml'
+          retention-days: 7
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: spotbugs-report
           path: '**/target/spotbugsXml.xml'
+          retention-days: 7
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: pmd-report
           path: '**/target/pmd.xml'
+          retention-days: 7
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: detekt-report
           path: '**/target/detekt-reports/'
+          retention-days: 7
 
   # ── Tests: Linux first (fast, gates downstream) ──────────────────────────
   test-linux:
-    name: Tests (Linux)
+    name: Tests (ubuntu-latest)
     needs: code-quality
     runs-on: ubuntu-latest
 
@@ -88,18 +92,20 @@ jobs:
         run: mvn test -Dflyway.skip=true
 
       - name: Upload test results
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: test-results-ubuntu-latest
           path: '**/target/surefire-reports/'
+          retention-days: 7
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: jacoco-report-ubuntu-latest
           path: '**/target/site/jacoco/'
+          retention-days: 14
 
   # ── Cross-platform tests: macOS + Windows (parallel, non-blocking) ──────
   test-cross-platform:
@@ -127,11 +133,12 @@ jobs:
         run: mvn test -Dflyway.skip=true -Dsurefire.forkCount=1.5C
 
       - name: Upload test results
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: test-results-${{ matrix.os }}
           path: '**/target/surefire-reports/'
+          retention-days: 7
 
   # ── Browser tests: Playwright on Linux (headless Chromium) ──────────────
   browser-tests:
@@ -162,11 +169,12 @@ jobs:
         run: mvn test -P browser-tests -Dflyway.skip=true
 
       - name: Upload browser test results
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: browser-test-results
           path: '**/target/surefire-reports/'
+          retention-days: 7
 
   # ── Build: verify the JAR assembles (Linux gates downstream, others parallel) ─
   build:
@@ -191,13 +199,14 @@ jobs:
 
       - name: Package application
         shell: bash
-        run: mvn package -DskipTests -Dflyway.skip=true
+        run: mvn package -DskipTests -Dflyway.skip=true -T 4
 
       - name: Upload JAR
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: runary-jar-${{ matrix.os }}
           path: runary-web/target/runary-*.jar
+          retention-days: 7
 
   # ── Docker build: verify the image assembles correctly ───────────────────
   docker-build:
@@ -278,11 +287,12 @@ jobs:
         run: mvn test -Dflyway.skip=false
 
       - name: Upload PostgreSQL test results
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: pg${{ matrix.pg }}-test-results
           path: '**/target/surefire-reports/'
+          retention-days: 7
 
   # ── E2E tests: Linux only (bash-based test script) ────────────────────────
   e2e-tests:
@@ -306,7 +316,7 @@ jobs:
           cache: maven
 
       - name: Build application
-        run: mvn package -DskipTests -Dflyway.skip=true
+        run: mvn package -DskipTests -Dflyway.skip=true -T 4
 
       - name: Start application
         env:
@@ -334,10 +344,11 @@ jobs:
         if: always()
         run: kill "$APP_PID" 2>/dev/null || true
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: e2e-test-results
           path: |
             test-results/
             e2e-test.log
+          retention-days: 7
